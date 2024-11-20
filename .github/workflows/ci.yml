@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test application
+    name: Test Application
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Install Go
+      # Step 2: Set up Go
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -56,15 +56,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Push Docker Image
-      - name: Push Docker Image
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
         run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker tag bankapp:latest "$DOCKER_USERNAME"/bankapp:latest
-          docker push "$DOCKER_USERNAME"/bankapp:latest
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Step 3: Tag and Push Docker Image
+      - name: Tag and Push Docker Image
+        run: |
+          docker tag bankapp:latest "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
+          docker push "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
 
   integration-tests:
     name: Integration Tests
