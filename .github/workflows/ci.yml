@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline with Docker Compose
 
 on:
   push:
@@ -9,101 +9,51 @@ on:
       - main
 
 jobs:
-  test:
-    name: Test Application
+  build-and-test:
+    name: Build and Test with Docker Compose
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
+      # Шаг 1: Клонировать репозиторий
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
+      # Шаг 2: Установка Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: go mod tidy
+      # Шаг 3: Запуск Docker Compose и выполнение тестов
+      - name: Build and Run Tests
+        run: |
+          docker-compose -f docker-compose.yml up --build --abort-on-container-exit --exit-code-from app
 
-      # Step 4: Run tests
-      - name: Run tests
-        run: go test -v ./...
-
-  build:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    needs: [test]
-
-    steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Build Docker Image
-      - name: Build Docker Image
-        run: docker build -f ./Dockerfile -t bankapp:latest .
+      # Шаг 4: Чистка
+      - name: Cleanup Docker
+        if: always()
+        run: docker-compose -f docker-compose.yml down
 
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build-and-test]
 
     steps:
-      # Step 1: Checkout repository
+      # Шаг 1: Клонировать репозиторий
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Log in to Docker Hub
+      # Шаг 2: Логин в Docker Hub
       - name: Log in to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      # Step 3: Tag and Push Docker Image
-      - name: Tag and Push Docker Image
-        run: |
-          docker tag bankapp:latest "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
-          docker push "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
-
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [deploy]
-
-    services:
-      db:
-        image: postgres:13
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U test" 
-          --health-interval 10s 
-          --health-timeout 5s 
-          --health-retries 5
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-    steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Set up Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.23.3'
-
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: go mod tidy
-
-      # Step 4: Run integration tests
-      - name: Run integration tests
-        env:
-          DATABASE_URL: postgres://test:test@localhost:5432/test_db?sslmode=disable
-        run: go test -v ./integration_tests
+      # Шаг 3: Публикация Docker Compose в Docker Hub
+      - name: Push Docker Image
+        run: |
+          docker-compose -f docker-compose.yml build app
+          docker tag bankapp_app:latest $DOCKER_USERNAME/bankapp:latest
+          docker push $DOCKER_USERNAME/bankapp:latest
