@@ -1,5 +1,6 @@
 name: CI Pipeline
 
+# Запускать при каждом пуше или pull request в ветку main
 on:
   push:
     branches:
@@ -14,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
+      # Шаг 1: Клонировать репозиторий
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
+      # Шаг 2: Установить Go
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.23.3
 
-      # Step 3: Cache dependencies
+      # Шаг 3: Кэшировать зависимости
       - name: Cache Go modules
         uses: actions/cache@v3
         with:
@@ -33,14 +34,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # Step 4: Install dependencies
+      # Шаг 4: Установить зависимости
       - name: Install dependencies
         run: go mod tidy
 
-      # Step 5: Run tests
+      # Шаг 5: Запустить тесты
       - name: Run tests
         run: go test -v ./...
 
-      # Step 6: Build application
+      # Шаг 6: Сборка приложения
       - name: Build application
         run: go build -o bankapp main.go
