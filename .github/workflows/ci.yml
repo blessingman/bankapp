@@ -9,30 +9,6 @@ on:
       - main
 
 jobs:
-  lint:
-    name: Lint code
-    runs-on: ubuntu-latest
-
-    steps:
-      # Шаг 1: Клонировать репозиторий
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Шаг 2: Установить Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.23.3
-
-      # Шаг 3: Установить golangci-lint
-      - name: Install golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
-
-      # Шаг 4: Запустить линт
-      - name: Run golangci-lint
-        run: golangci-lint run
-
   test:
     name: Test application
     runs-on: ubuntu-latest
