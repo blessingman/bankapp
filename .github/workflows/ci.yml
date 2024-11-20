@@ -44,7 +44,15 @@ jobs:
 
       # Step 2: Build Docker Image
       - name: Build Docker Image
-        run: docker build -f ./Dockerfile -t bankapp:latest .
+        run: docker build -t bankapp:latest .
+
+      # Step 3: Save Docker Image
+      - name: Save Docker Image for later steps
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: |
+            docker-image.tar
 
   deploy:
     name: Deploy Application
@@ -56,12 +64,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Log in to Docker Hub
+      # Step 2: Download Docker Image
+      - name: Download Docker Image from artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+
+      # Step 3: Load Docker Image
+      - name: Load Docker Image
+        run: docker load < docker-image.tar
+
+      # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Step 3: Tag and Push Docker Image
+      # Step 5: Tag and Push Docker Image
       - name: Tag and Push Docker Image
         run: |
           docker tag bankapp:latest "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
@@ -92,18 +110,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.23.3'
+      # Step 2: Set up Docker Compose
+      - name: Set up Docker Compose
+        run: sudo apt-get update && sudo apt-get install docker-compose -y
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: go mod tidy
-
-      # Step 4: Run integration tests
-      - name: Run integration tests
-        env:
-          DATABASE_URL: postgres://test:test@localhost:5432/test_db?sslmode=disable
-        run: go test -v ./integration_tests
+      # Step 3: Start Services and Run Integration Tests
+      - name: Start Services and Run Integration Tests
+        run: |
+          docker-compose up --abort-on-container-exit --exit-code-from app
