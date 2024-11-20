@@ -14,72 +14,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.23.3'
 
-      # Step 3: Install dependencies
       - name: Install dependencies
         run: go mod tidy
 
-      # Step 4: Run tests
       - name: Run tests
         run: go test -v ./...
 
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker Image
       - name: Build Docker Image
-        run: docker build -t bankapp:latest .
+        run: |
+          docker build -t bankapp:latest .
+          docker save bankapp:latest > docker-image.tar
 
-      # Step 3: Save Docker Image
-      - name: Save Docker Image for later steps
+      - name: Upload Docker Image Artifact
         uses: actions/upload-artifact@v3
         with:
           name: docker-image
-          path: |
-            docker-image.tar
+          path: docker-image.tar
 
   deploy:
     name: Deploy Application
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: build
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Download Docker Image
-      - name: Download Docker Image from artifact
+      - name: Download Docker Image Artifact
         uses: actions/download-artifact@v3
         with:
           name: docker-image
 
-      # Step 3: Load Docker Image
       - name: Load Docker Image
         run: docker load < docker-image.tar
 
-      # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Step 5: Tag and Push Docker Image
       - name: Tag and Push Docker Image
         run: |
           docker tag bankapp:latest "${{ secrets.DOCKER_USERNAME }}/bankapp:latest"
@@ -88,7 +77,7 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: deploy
 
     services:
       db:
@@ -106,15 +95,18 @@ jobs:
           --health-retries 5
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Docker Compose
-      - name: Set up Docker Compose
-        run: sudo apt-get update && sudo apt-get install docker-compose -y
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23.3'
 
-      # Step 3: Start Services and Run Integration Tests
-      - name: Start Services and Run Integration Tests
-        run: |
-          docker-compose up --abort-on-container-exit --exit-code-from app
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/test_db?sslmode=disable
+        run: go test -v ./integration_tests
