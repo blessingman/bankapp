@@ -3,6 +3,7 @@ package controllers
 import (
 	"bankapp/models"
 	"bankapp/utils"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -119,10 +120,10 @@ func CreateAccount(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
+		fmt.Println("Ошибка привязки JSON:", err) // Добавьте эту строку для отладки
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	account := models.Account{
 		UserID:  userID,
 		Balance: input.InitialBalance,

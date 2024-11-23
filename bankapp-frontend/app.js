@@ -111,8 +111,13 @@ async function showAccountsSection() {
 
 // Добавление счета
 addAccountButton.addEventListener("click", async () => {
-  const balance = document.getElementById("new-account-balance").value;
+  const balance = parseFloat(document.getElementById("new-account-balance").value); // Преобразование строки в число
   const token = localStorage.getItem("token");
+
+  if (isNaN(balance)) {
+    alert("Баланс должен быть числом");
+    return;
+  }
 
   try {
     const response = await fetch(`${API_URL}/accounts`, {
@@ -121,7 +126,7 @@ addAccountButton.addEventListener("click", async () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ initial_balance: balance }),
+      body: JSON.stringify({ initial_balance: balance }), // Передача числа
     });
 
     if (!response.ok) {
@@ -129,12 +134,42 @@ addAccountButton.addEventListener("click", async () => {
       return;
     }
 
-    alert("Счет добавлен!");
-    showAccountsSection();
+    alert("Счёт успешно добавлен!");
+    // Обновление списка счетов после добавления
+    await fetchAndDisplayAccounts();
   } catch (error) {
-    console.error("Ошибка при добавлении счета:", error);
+    console.error("Ошибка при добавлении счёта:", error);
   }
 });
+
+async function fetchAndDisplayAccounts() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${API_URL}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      throw new Error("Не удалось загрузить счета");
+    }
+
+    const accounts = await response.json();
+
+    // Очистка старого списка
+    accountsList.innerHTML = "";
+
+    // Отображение новых данных
+    accounts.forEach((account) => {
+      const li = document.createElement("li");
+      li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
+      accountsList.appendChild(li);
+    });
+  } catch (error) {
+    console.error("Ошибка при загрузке счетов:", error);
+  }
+}
+
 
 // Переводы
 transferButton.addEventListener("click", async () => {
