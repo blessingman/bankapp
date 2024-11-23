@@ -13,7 +13,9 @@ services:
       - bank-network
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile.backend
     ports:
       - "8080:8080"
     depends_on:
@@ -25,6 +27,17 @@ services:
       DB_NAME: bankdb
       DB_PORT: "5432"
       JWT_SECRET: your_secret_key
+    networks:
+      - bank-network
+
+  frontend:
+    build:
+      context: ./bankapp-frontend
+      dockerfile: dockerfile.frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - app
     networks:
       - bank-network
 

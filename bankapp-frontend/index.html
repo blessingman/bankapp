@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Bank App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Форма входа -->
+    <div id="login-form">
+      <h2>Вход</h2>
+      <input type="text" id="username" placeholder="Имя пользователя">
+      <input type="password" id="password" placeholder="Пароль">
+      <button id="login-button">Войти</button>
+      <p id="login-error" class="error-message"></p>
+    </div>
+
+    <!-- Область с аккаунтами -->
+    <div id="accounts-section" style="display: none;">
+      <h2>Ваши счета</h2>
+      <button id="logout-button">Выйти</button>
+      <ul id="accounts-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
