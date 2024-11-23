@@ -45,7 +45,7 @@ func main() {
 
 	// Настройка CORS middleware
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:80"}, // Укажите URL вашего фронтенда
+		AllowOrigins:     []string{"http://localhost"}, // Укажите URL вашего фронтенда
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

@@ -45,7 +45,7 @@ func Transfer(c *gin.Context) {
 		FromAccountID uint    `json:"from_account_id" binding:"required"`
 		ToAccountID   uint    `json:"to_account_id" binding:"required"`
 		Amount        float64 `json:"amount" binding:"required,gt=0"`
-		Category      string  `json:"category" binding:"required"`
+		Category      string  `json:"category"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {

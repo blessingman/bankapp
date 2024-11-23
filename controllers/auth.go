@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"bankapp/models"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -19,14 +18,16 @@ func Register(c *gin.Context) {
 		Password string `json:"password" binding:"required"`
 	}
 
+	// Validate input
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Пожалуйста, заполните имя пользователя и пароль"})
 		return
 	}
 
+	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось сохранить пароль"})
 		return
 	}
 
@@ -36,51 +37,57 @@ func Register(c *gin.Context) {
 	}
 
 	db := c.MustGet("db").(*gorm.DB)
+	// Check for username uniqueness
 	if err := db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Имя пользователя уже существует"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "Регистрация прошла успешно"})
 }
+
 func Login(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 
+	// Validate input
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Пожалуйста, заполните имя пользователя и пароль"})
 		return
 	}
 
 	db := c.MustGet("db").(*gorm.DB)
 	var user models.User
 
+	// Check if user exists
 	if err := db.Where("username = ?", input.Username).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверное имя пользователя или пароль"})
 		return
 	}
 
+	// Validate password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Неверное имя пользователя или пароль"})
 		return
 	}
 
 	// Generate JWT token
 	token, err := generateJWTToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при генерации токена"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "token": token})
+	c.JSON(http.StatusOK, gin.H{"message": "Вход выполнен успешно", "token": token})
 }
 
 func generateJWTToken(userID uint) (string, error) {
+	// Fallback to a default secret key if not set
 	secretKey := os.Getenv("JWT_SECRET")
 	if secretKey == "" {
-		return "", fmt.Errorf("JWT secret key not set")
+		secretKey = "default_secret_key" // Use a secure default in production
 	}
 
 	claims := jwt.MapClaims{
