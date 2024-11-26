@@ -1,151 +1,90 @@
 const API_URL = "http://localhost:8080";
 
+// Sections
 const loginSection = document.getElementById("login-section");
 const registerSection = document.getElementById("register-section");
 const accountsSection = document.getElementById("accounts-section");
 
+// Buttons
 const loginButton = document.getElementById("login-button");
 const registerButton = document.getElementById("register-button");
 const addAccountButton = document.getElementById("add-account-button");
 const transferButton = document.getElementById("transfer-button");
 const logoutButton = document.getElementById("logout-button");
 
+// Navigation Links
 const toRegisterLink = document.getElementById("to-register");
 const toLoginLink = document.getElementById("to-login");
 
+// Error messages
 const loginError = document.getElementById("login-error");
 const registerError = document.getElementById("register-error");
 
+// Account list
 const accountsList = document.getElementById("accounts-list");
 
-// Переключение между формами
-toRegisterLink.addEventListener("click", () => {
-  loginSection.classList.add("hidden");
-  registerSection.classList.remove("hidden");
-});
+// Helper Functions
+function switchSection(from, to) {
+  from.classList.add("hidden");
+  to.classList.remove("hidden");
+}
 
-toLoginLink.addEventListener("click", () => {
-  registerSection.classList.add("hidden");
-  loginSection.classList.remove("hidden");
-});
+async function fetchWithAuth(endpoint, options = {}) {
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, ...options.headers };
+  const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Произошла ошибка");
+  }
+  return response.json();
+}
 
-// Вход
+// Navigation between forms
+toRegisterLink.addEventListener("click", () => switchSection(loginSection, registerSection));
+toLoginLink.addEventListener("click", () => switchSection(registerSection, loginSection));
+
+// Login
 loginButton.addEventListener("click", async () => {
   const username = document.getElementById("login-username").value;
   const password = document.getElementById("login-password").value;
 
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const data = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    });
+    }).then((res) => res.json());
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      loginError.textContent = errorData.error || "Ошибка входа";
-      return;
-    }
+    if (!data.token) throw new Error("Ошибка авторизации");
 
-    const data = await response.json();
     localStorage.setItem("token", data.token);
-    showAccountsSection();
+    switchSection(loginSection, accountsSection);
+    await fetchAndDisplayAccounts();
   } catch (error) {
-    loginError.textContent = "Сетевая ошибка";
+    loginError.textContent = error.message;
   }
 });
 
-// Регистрация
+// Registration
 registerButton.addEventListener("click", async () => {
   const username = document.getElementById("register-username").value;
   const password = document.getElementById("register-password").value;
 
   try {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      registerError.textContent = errorData.error || "Ошибка регистрации";
-      return;
-    }
-
     alert("Регистрация успешна!");
-    registerSection.classList.add("hidden");
-    loginSection.classList.remove("hidden");
+    switchSection(registerSection, loginSection);
   } catch (error) {
-    registerError.textContent = "Сетевая ошибка";
+    registerError.textContent = error.message;
   }
 });
 
-// Показ счетов
-async function showAccountsSection() {
-  loginSection.classList.add("hidden");
-  accountsSection.classList.remove("hidden");
-
-  const token = localStorage.getItem("token");
-
-  try {
-    const response = await fetch(`${API_URL}/accounts`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) {
-      throw new Error("Не удалось загрузить счета");
-    }
-
-    const accounts = await response.json();
-    accountsList.innerHTML = "";
-    accounts.forEach((account) => {
-      const li = document.createElement("li");
-      li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
-      accountsList.appendChild(li);
-    });
-  } catch (error) {
-    console.error("Ошибка при загрузке счетов:", error);
-  }
-}
-
-// Добавление счета
-addAccountButton.addEventListener("click", async () => {
-  const balance = parseFloat(document.getElementById("new-account-balance").value); // Преобразование строки в число
-  const token = localStorage.getItem("token");
-
-  // Проверка на корректность баланса
-  if (isNaN(balance) || balance <= 0) {
-    alert("Введите корректное числовое значение для баланса!");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/accounts`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Передача токена
-      },
-      body: JSON.stringify({ initial_balance: balance }), // Отправляем данные
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Ошибка добавления счёта:", errorData);
-      alert(errorData.error || "Ошибка при добавлении счёта");
-      return;
-    }
-
-    alert("Счёт успешно добавлен!");
-    await fetchAndDisplayAccounts(); // Обновляем список счетов
-  } catch (error) {
-    console.error("Ошибка при добавлении счёта:", error);
-    alert("Сетевая ошибка при добавлении счёта");
-  }
-});
-
-
+// Fetch and display accounts
 async function fetchAndDisplayAccounts() {
   const token = localStorage.getItem("token");
 
@@ -155,32 +94,115 @@ async function fetchAndDisplayAccounts() {
     });
 
     if (!response.ok) {
+      throw new Error(`Ошибка: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+
+    // Логирование данных для проверки
+    console.log("Полученные данные:", responseData);
+
+    const accounts = responseData.accounts;
+
+    // Проверяем, что `accounts` — массив
+    if (!Array.isArray(accounts)) {
+      console.error("Ошибка формата: `accounts` не является массивом", accounts);
+      throw new Error("Неверный формат данных, ожидается массив счетов");
+    }
+
+    // Очистка текущего списка и отображение новых данных
+    accountsList.innerHTML = "";
+    accounts.forEach((account) => {
+      const li = document.createElement("li");
+      li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
+      accountsList.appendChild(li);
+    });
+
+    console.log("Счета успешно отображены");
+  } catch (error) {
+    console.error("Ошибка при загрузке счетов:", error);
+    alert("Не удалось загрузить счета. Проверьте подключение или повторите позже.");
+  }
+}
+
+async function showAccountsSection() {
+  // Скрываем секцию входа и показываем секцию счетов
+  loginSection.classList.add("hidden");
+  accountsSection.classList.remove("hidden");
+
+  const token = localStorage.getItem("token"); // Получаем токен из локального хранилища
+
+  try {
+    // Запрашиваем данные счетов с сервера
+    const response = await fetch(`${API_URL}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` }, // Передаем токен в заголовках
+    });
+
+    if (!response.ok) {
       throw new Error("Не удалось загрузить счета");
     }
 
-    const accounts = await response.json();
+    const responseData = await response.json(); // Парсим ответ сервера
 
-    // Очистка старого списка
+    // Проверяем, что ответ содержит массив счетов
+    const accounts = responseData.accounts || []; // Предотвращаем ошибку, если accounts отсутствует
+    if (!Array.isArray(accounts)) {
+      throw new Error("Неверный формат данных счетов");
+    }
+
+    // Очищаем текущий список счетов на странице
     accountsList.innerHTML = "";
 
-    // Отображение новых данных
+    // Перебираем счета и отображаем их
     accounts.forEach((account) => {
       const li = document.createElement("li");
       li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
       accountsList.appendChild(li);
     });
   } catch (error) {
+    // Логируем ошибки в консоль для отладки
     console.error("Ошибка при загрузке счетов:", error);
+    alert("Не удалось загрузить счета. Проверьте подключение или повторите позже.");
   }
 }
 
 
+// Add account
+addAccountButton.addEventListener("click", async () => {
+  const balance = parseFloat(document.getElementById("new-account-balance").value);
+
+  if (isNaN(balance) || balance <= 0) {
+    alert("Введите корректное числовое значение для баланса!");
+    return;
+  }
+
+  try {
+    await fetchWithAuth("/accounts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initial_balance: balance }),
+    });
+    alert("Счёт успешно добавлен!");
+    await fetchAndDisplayAccounts();
+  } catch (error) {
+    console.error("Ошибка при добавлении счёта:", error);
+    alert(error.message);
+  }
+});
+
+// Transfer funds
 // Переводы
 transferButton.addEventListener("click", async () => {
-  const fromAccount = document.getElementById("from-account-id").value;
-  const toAccount = document.getElementById("to-account-id").value;
-  const amount = document.getElementById("transfer-amount").value;
+  const fromAccount = parseInt(document.getElementById("from-account-id").value, 10);
+  const toAccount = parseInt(document.getElementById("to-account-id").value, 10);
+  const amount = parseFloat(document.getElementById("transfer-amount").value);
   const token = localStorage.getItem("token");
+
+  // Проверка на валидность данных
+  if (isNaN(fromAccount) || isNaN(toAccount) || isNaN(amount) || amount <= 0) {
+    alert("Введите корректные значения для перевода.");
+    return;
+  }
 
   try {
     const response = await fetch(`${API_URL}/transfer`, {
@@ -193,25 +215,28 @@ transferButton.addEventListener("click", async () => {
         from_account_id: fromAccount,
         to_account_id: toAccount,
         amount: amount,
-        category: "example",
+        category: "example", // Пример категории, если требуется
       }),
     });
 
     if (!response.ok) {
-      alert("Ошибка при переводе");
+      const errorData = await response.json();
+      console.error("Ошибка при переводе:", errorData);
+      alert(errorData.error || "Ошибка при переводе.");
       return;
     }
 
-    alert("Перевод выполнен!");
-    showAccountsSection();
+    alert("Перевод выполнен успешно!");
+    await fetchAndDisplayAccounts(); // Обновляем список счетов
   } catch (error) {
     console.error("Ошибка при переводе:", error);
+    alert("Сетевая ошибка при переводе.");
   }
 });
 
-// Выход
+
+// Logout
 logoutButton.addEventListener("click", () => {
   localStorage.removeItem("token");
-  accountsSection.classList.add("hidden");
-  loginSection.classList.remove("hidden");
+  switchSection(accountsSection, loginSection);
 });
