@@ -124,4 +124,4 @@ jobs:
       - name: Run integration tests
         env:
           DATABASE_URL: postgres://test:test@localhost:5432/test_db?sslmode=disable
-        run: go test -v ./test/integration -cover
+        run: go test -v ./... -cover
