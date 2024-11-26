@@ -44,7 +44,7 @@ jobs:
 
       - name: Build Frontend Docker Image
         run: |
-          docker build -t bankapp-frontend:latest -f dockerfile.frontend .
+          docker build -t bankapp-frontend:latest -f bankapp-frontend/dockerfile.frontend .
           docker save bankapp-frontend:latest > frontend-docker-image.tar
 
       - name: Upload Docker Image Artifacts
