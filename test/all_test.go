@@ -123,7 +123,7 @@ func TestAuth(t *testing.T) {
 	})
 
 	t.Run("TestLogin", func(t *testing.T) {
-		reqBody := []byte(`{"username":"testuser", "password":"password123"}`)
+		reqBody := []byte(`{"username":"newuser", "password":"password123"}`)
 		req, _ := http.NewRequest("POST", "/auth/login", bytes.NewBuffer(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 
