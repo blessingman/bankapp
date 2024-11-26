@@ -114,8 +114,9 @@ addAccountButton.addEventListener("click", async () => {
   const balance = parseFloat(document.getElementById("new-account-balance").value); // Преобразование строки в число
   const token = localStorage.getItem("token");
 
-  if (isNaN(balance)) {
-    alert("Баланс должен быть числом");
+  // Проверка на корректность баланса
+  if (isNaN(balance) || balance <= 0) {
+    alert("Введите корректное числовое значение для баланса!");
     return;
   }
 
@@ -124,23 +125,26 @@ addAccountButton.addEventListener("click", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Передача токена
       },
-      body: JSON.stringify({ initial_balance: balance }), // Передача числа
+      body: JSON.stringify({ initial_balance: balance }), // Отправляем данные
     });
 
     if (!response.ok) {
-      alert("Ошибка при добавлении счета");
+      const errorData = await response.json();
+      console.error("Ошибка добавления счёта:", errorData);
+      alert(errorData.error || "Ошибка при добавлении счёта");
       return;
     }
 
     alert("Счёт успешно добавлен!");
-    // Обновление списка счетов после добавления
-    await fetchAndDisplayAccounts();
+    await fetchAndDisplayAccounts(); // Обновляем список счетов
   } catch (error) {
     console.error("Ошибка при добавлении счёта:", error);
+    alert("Сетевая ошибка при добавлении счёта");
   }
 });
+
 
 async function fetchAndDisplayAccounts() {
   const token = localStorage.getItem("token");
