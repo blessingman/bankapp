@@ -4,95 +4,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bank App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f8f9fa;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      max-width: 400px;
-      width: 100%;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .error-message {
-      color: red;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="login-section" class="container">
-    <h1>Вход</h1>
-    <form>
-      <input type="text" id="login-username" placeholder="Имя пользователя">
-      <input type="password" id="login-password" placeholder="Пароль">
-      <button type="button" id="login-button">Войти</button>
-      <p class="error-message" id="login-error"></p>
-    </form>
-    <a href="#" id="to-register">Нет аккаунта? Зарегистрироваться</a>
-  </div>
+  <header class="header">
+    <h1>Bank App</h1>
+    <p>Управляйте своими финансами просто и удобно</p>
+  </header>
 
-  <div id="register-section" class="container hidden">
-    <h1>Регистрация</h1>
-    <form>
-      <input type="text" id="register-username" placeholder="Имя пользователя">
-      <input type="password" id="register-password" placeholder="Пароль">
-      <button type="button" id="register-button">Зарегистрироваться</button>
-      <p class="error-message" id="register-error"></p>
-    </form>
-    <a href="#" id="to-login">Уже есть аккаунт? Войти</a>
-  </div>
+  <main>
+    <!-- Login Section -->
+    <section id="login-section" class="container">
+      <h2>Вход</h2>
+      <form>
+        <input type="text" id="login-username" placeholder="Имя пользователя">
+        <input type="password" id="login-password" placeholder="Пароль">
+        <button type="button" id="login-button" class="primary-button">Войти</button>
+        <p class="error-message" id="login-error"></p>
+      </form>
+      <a href="#" id="to-register" class="link">Нет аккаунта? Зарегистрироваться</a>
+    </section>
 
-  <div id="accounts-section" class="container hidden">
-    <h1>Мои счета</h1>
-    <ul id="accounts-list"></ul>
-    <input type="number" id="new-account-balance" placeholder="Начальный баланс">
-    <button id="add-account-button">Добавить счет</button>
+    <!-- Register Section -->
+    <section id="register-section" class="container hidden">
+      <h2>Регистрация</h2>
+      <form>
+        <input type="text" id="register-username" placeholder="Имя пользователя">
+        <input type="password" id="register-password" placeholder="Пароль">
+        <button type="button" id="register-button" class="primary-button">Зарегистрироваться</button>
+        <p class="error-message" id="register-error"></p>
+      </form>
+      <a href="#" id="to-login" class="link">Уже есть аккаунт? Войти</a>
+    </section>
 
-    <h2>Переводы</h2>
-    <input type="number" id="from-account-id" placeholder="ID счета-отправителя">
-    <input type="number" id="to-account-id" placeholder="ID счета-получателя">
-    <input type="number" id="transfer-amount" placeholder="Сумма перевода">
-    <button id="transfer-button">Перевести</button>
+    <!-- Accounts Section -->
+    <section id="accounts-section" class="container hidden">
+      <h2>Мои счета</h2>
+      <ul id="accounts-list" class="accounts-list"></ul>
+      <div class="form-group">
+        <input type="number" id="new-account-balance" placeholder="Начальный баланс">
+        <button id="add-account-button" class="primary-button">Добавить счет</button>
+      </div>
 
-    <button id="logout-button">Выйти</button>
-  </div>
+      <h3>Переводы</h3>
+      <div class="form-group">
+        <input type="number" id="from-account-id" placeholder="ID счета-отправителя">
+        <input type="number" id="to-account-id" placeholder="ID счета-получателя">
+        <input type="number" id="transfer-amount" placeholder="Сумма перевода">
+        <button id="transfer-button" class="primary-button">Перевести</button>
+      </div>
 
+      <button id="logout-button" class="secondary-button">Выйти</button>
+    </section>
+  </main>
 </body>
 <script src="app.js"></script>
 </html>
