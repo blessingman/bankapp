@@ -1,97 +1,139 @@
+/* Основные стили */
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  background: #f0f4f8;
-  color: #333;
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2); /* Теплый градиент */
+  color: #5d4037; /* Мягкий коричневый цвет для текста */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Заголовок */
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: #bf360c; /* Теплый оранжевый цвет для заголовка */
+  font-weight: bold;
+}
+
+/* Основной контейнер */
+.main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #0072ff;
+  min-height: calc(100vh - 60px);
+  padding: 20px;
 }
 
 .container {
-  background: #ffffff;
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: 100%;
   max-width: 400px;
-  margin-bottom: 20px;
+  width: 100%;
+  background: #fff8e1; /* Единый цвет блока */
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
+/* Скрытие */
+.hidden {
+  display: none;
+}
+
+/* Заголовки секций */
 h2 {
-  margin-bottom: 15px;
-  color: #0072ff;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
   text-align: center;
+  color: #e65100; /* Яркий оранжевый для заголовков секций */
+  text-transform: uppercase;
 }
 
+/* Поля ввода */
 input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: px;
+  border: 1px solid #e0e0e0; /* Легкая граница */
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #fff8e1; /* Единый цвет */
+  color: #5d4037; /* Темный текст */
 }
 
+input:focus {
+  border-color: #ff9800; /* Оранжевый цвет при фокусе */
+  outline: none;
+  box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+}
+
+/* Кнопки */
 button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   font-size: 16px;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.primary-button {
-  background-color: #0072ff;
+  border-radius: 6px;
+  background-color: #ff8a65; /* Теплый оранжево-красный */
   color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.primary-button:hover {
-  background-color: #005bb5;
+button:hover {
+  background-color: #d84315; /* Более темный оттенок при наведении */
 }
 
-.secondary-button {
-  background-color: #f8f9fa;
-  color: #333;
-  margin-top: 10px;
+button:active {
+  transform: scale(0.95);
 }
 
-.secondary-button:hover {
-  background-color: #ddd;
-}
-
-.accounts-list {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
+/* Ссылки */
 .link {
+  color: #ff7043; /* Яркий теплый оранжевый */
+  font-size: 14px;
   text-decoration: none;
-  color: #0072ff;
+  margin-top: 15px;
   display: block;
   text-align: center;
-  margin-top: 10px;
 }
 
 .link:hover {
   text-decoration: underline;
 }
 
-.form-group {
-  margin-bottom: 15px;
+/* Список счетов */
+.accounts-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
 }
 
-.hidden {
-  display: none;
+.accounts-list li {
+  background: #fff3e0;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  color: #5d4037;
 }
+
+
+
+
+
+input:focus {
+  border: 2px solid red;
+}
+
+
