@@ -1,157 +1,178 @@
 const API_URL = "http://localhost:8080";
 
 // Sections
-const sections = {
-  login: document.getElementById("login-section"),
-  register: document.getElementById("register-section"),
-  accounts: document.getElementById("accounts-section"),
-};
+const loginSection = document.getElementById("login-section");
+const registerSection = document.getElementById("register-section");
+const accountsSection = document.getElementById("accounts-section");
 
 // Buttons
-const buttons = {
-  login: document.getElementById("login-button"),
-  register: document.getElementById("register-button"),
-  addAccount: document.getElementById("add-account-button"),
-  transfer: document.getElementById("transfer-button"),
-  logout: document.getElementById("logout-button"),
-};
+const loginButton = document.getElementById("login-button");
+const registerButton = document.getElementById("register-button");
+const addAccountButton = document.getElementById("add-account-button");
+const transferButton = document.getElementById("transfer-button");
+const logoutButton = document.getElementById("logout-button");
+
+// Navigation Links
+const toRegisterLink = document.getElementById("to-register");
+const toLoginLink = document.getElementById("to-login");
 
 // Error messages
-const errors = {
-  login: document.getElementById("login-error"),
-  register: document.getElementById("register-error"),
-};
+const loginError = document.getElementById("login-error");
+const registerError = document.getElementById("register-error");
 
-// Inputs
-const inputs = {
-  username: document.getElementById("login-username"),
-  password: document.getElementById("login-password"),
-  newAccountBalance: document.getElementById("new-account-balance"),
-  fromAccountId: document.getElementById("from-account-id"),
-  toAccountId: document.getElementById("to-account-id"),
-  transferAmount: document.getElementById("transfer-amount"),
-};
+// Account list
+const accountsList = document.getElementById("accounts-list");
 
-// Message Container
-const messageContainer = document.createElement("div");
-messageContainer.id = "message-container";
-document.body.appendChild(messageContainer);
-
-messageContainer.style.cssText = `
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  background-color: #f0ad4e;
-  color: white;
-  border-radius: 5px;
-  z-index: 1000;
-  display: none;
-`;
-
-function showMessage(text, duration = 3000) {
-  messageContainer.textContent = text;
-  messageContainer.style.display = "block";
-
-  setTimeout(() => {
-    messageContainer.style.display = "none";
-  }, duration);
-}
-
-// General Initialization
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".container").forEach(container => {
-    container.style.opacity = "0";
-    container.style.transform = "translateY(20px)";
-    container.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-    setTimeout(() => {
-      container.style.opacity = "1";
-      container.style.transform = "translateY(0)";
-    }, 100);
-  });
-});
-
-// Utility: Reset Forms and Focus
-function resetFormsAndFocus(targetInput = null) {
-  document.querySelectorAll("input").forEach(input => {
-    if (input !== targetInput) {
-      input.value = "";
-    }
-  });
-
-  setTimeout(() => {
-    if (targetInput) {
-      targetInput.focus();
-    }
-  }, 50);
-}
-
-// Utility: Switch Sections
-function switchSection(from, to, targetInput = null) {
+// Helper Functions
+function switchSection(from, to) {
   from.classList.add("hidden");
   to.classList.remove("hidden");
-
-  if (targetInput) {
-    setTimeout(() => targetInput.focus(), 100);
-  }
 }
 
+async function fetchWithAuth(endpoint, options = {}) {
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, ...options.headers };
+  const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Произошла ошибка");
+  }
+  return response.json();
+}
+
+// Navigation between forms
+toRegisterLink.addEventListener("click", () => switchSection(loginSection, registerSection));
+toLoginLink.addEventListener("click", () => switchSection(registerSection, loginSection));
+
 // Login
-buttons.login.addEventListener("click", async () => {
-  const username = inputs.username.value;
-  const password = inputs.password.value;
+loginButton.addEventListener("click", async () => {
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
 
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const data = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    });
+    }).then((res) => res.json());
 
-    const data = await response.json();
     if (!data.token) throw new Error("Ошибка авторизации");
 
     localStorage.setItem("token", data.token);
-    switchSection(sections.login, sections.accounts, inputs.newAccountBalance);
+    switchSection(loginSection, accountsSection);
     await fetchAndDisplayAccounts();
   } catch (error) {
-    errors.login.textContent = error.message;
-  } finally {
-    resetFormsAndFocus(inputs.username);
+    loginError.textContent = error.message;
   }
 });
 
-// Register
-buttons.register.addEventListener("click", async () => {
+// Registration
+registerButton.addEventListener("click", async () => {
   const username = document.getElementById("register-username").value;
   const password = document.getElementById("register-password").value;
 
   try {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-
-    const data = await response.json();
-    if (!data.success) throw new Error("Ошибка регистрации");
-
-    showMessage("Регистрация успешна! Войдите в систему.", 3000);
-    switchSection(sections.register, sections.login, inputs.username);
+    alert("Регистрация успешна!");
+    switchSection(registerSection, loginSection);
   } catch (error) {
-    errors.register.textContent = error.message;
-  } finally {
-    resetFormsAndFocus(inputs.username);
+    registerError.textContent = error.message;
   }
 });
 
-// Add Account
-buttons.addAccount.addEventListener("click", async () => {
-  const balance = parseFloat(inputs.newAccountBalance.value);
+// Fetch and display accounts
+async function fetchAndDisplayAccounts() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${API_URL}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ошибка: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+
+    // Логирование данных для проверки
+    console.log("Полученные данные:", responseData);
+
+    const accounts = responseData.accounts;
+
+    // Проверяем, что `accounts` — массив
+    if (!Array.isArray(accounts)) {
+      console.error("Ошибка формата: `accounts` не является массивом", accounts);
+      throw new Error("Неверный формат данных, ожидается массив счетов");
+    }
+
+    // Очистка текущего списка и отображение новых данных
+    accountsList.innerHTML = "";
+    accounts.forEach((account) => {
+      const li = document.createElement("li");
+      li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
+      accountsList.appendChild(li);
+    });
+
+    console.log("Счета успешно отображены");
+  } catch (error) {
+    console.error("Ошибка при загрузке счетов:", error);
+    alert("Не удалось загрузить счета. Проверьте подключение или повторите позже.");
+  }
+}
+
+async function showAccountsSection() {
+  // Скрываем секцию входа и показываем секцию счетов
+  loginSection.classList.add("hidden");
+  accountsSection.classList.remove("hidden");
+
+  const token = localStorage.getItem("token"); // Получаем токен из локального хранилища
+
+  try {
+    // Запрашиваем данные счетов с сервера
+    const response = await fetch(`${API_URL}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` }, // Передаем токен в заголовках
+    });
+
+    if (!response.ok) {
+      throw new Error("Не удалось загрузить счета");
+    }
+
+    const responseData = await response.json(); // Парсим ответ сервера
+
+    // Проверяем, что ответ содержит массив счетов
+    const accounts = responseData.accounts || []; // Предотвращаем ошибку, если accounts отсутствует
+    if (!Array.isArray(accounts)) {
+      throw new Error("Неверный формат данных счетов");
+    }
+
+    // Очищаем текущий список счетов на странице
+    accountsList.innerHTML = "";
+
+    // Перебираем счета и отображаем их
+    accounts.forEach((account) => {
+      const li = document.createElement("li");
+      li.textContent = `ID: ${account.ID}, Баланс: ${account.Balance}`;
+      accountsList.appendChild(li);
+    });
+  } catch (error) {
+    // Логируем ошибки в консоль для отладки
+    console.error("Ошибка при загрузке счетов:", error);
+    alert("Не удалось загрузить счета. Проверьте подключение или повторите позже.");
+  }
+}
+
+
+// Add account
+addAccountButton.addEventListener("click", async () => {
+  const balance = parseFloat(document.getElementById("new-account-balance").value);
 
   if (isNaN(balance) || balance <= 0) {
-    showMessage("Введите корректное числовое значение для баланса!", 3000);
+    alert("Введите корректное числовое значение для баланса!");
     return;
   }
 
@@ -161,47 +182,61 @@ buttons.addAccount.addEventListener("click", async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ initial_balance: balance }),
     });
-    showMessage("Счёт успешно добавлен!", 3000);
+    alert("Счёт успешно добавлен!");
     await fetchAndDisplayAccounts();
   } catch (error) {
-    showMessage(`Ошибка: ${error.message}`, 3000);
-  } finally {
-    resetFormsAndFocus(inputs.newAccountBalance);
+    console.error("Ошибка при добавлении счёта:", error);
+    alert(error.message);
   }
 });
 
-// Transfer Funds
-buttons.transfer.addEventListener("click", async () => {
-  const fromAccount = parseInt(inputs.fromAccountId.value, 10);
-  const toAccount = parseInt(inputs.toAccountId.value, 10);
-  const amount = parseFloat(inputs.transferAmount.value);
+// Transfer funds
+// Переводы
+transferButton.addEventListener("click", async () => {
+  const fromAccount = parseInt(document.getElementById("from-account-id").value, 10);
+  const toAccount = parseInt(document.getElementById("to-account-id").value, 10);
+  const amount = parseFloat(document.getElementById("transfer-amount").value);
+  const token = localStorage.getItem("token");
 
+  // Проверка на валидность данных
   if (isNaN(fromAccount) || isNaN(toAccount) || isNaN(amount) || amount <= 0) {
-    showMessage("Введите корректные значения для перевода.", 3000);
+    alert("Введите корректные значения для перевода.");
     return;
   }
 
   try {
-    await fetchWithAuth("/transfer", {
+    const response = await fetch(`${API_URL}/transfer`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         from_account_id: fromAccount,
         to_account_id: toAccount,
         amount: amount,
+        category: "example", // Пример категории, если требуется
       }),
     });
-    showMessage("Перевод выполнен успешно!", 3000);
-    await fetchAndDisplayAccounts();
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Ошибка при переводе:", errorData);
+      alert(errorData.error || "Ошибка при переводе.");
+      return;
+    }
+
+    alert("Перевод выполнен успешно!");
+    await fetchAndDisplayAccounts(); // Обновляем список счетов
   } catch (error) {
-    showMessage("Ошибка при выполнении перевода.", 3000);
-  } finally {
-    resetFormsAndFocus(inputs.transferAmount);
+    console.error("Ошибка при переводе:", error);
+    alert("Сетевая ошибка при переводе.");
   }
 });
 
+
 // Logout
-buttons.logout.addEventListener("click", () => {
+logoutButton.addEventListener("click", () => {
   localStorage.removeItem("token");
-  switchSection(sections.accounts, sections.login, inputs.username);
+  switchSection(accountsSection, loginSection);
 });
