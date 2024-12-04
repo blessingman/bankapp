@@ -9,14 +9,19 @@
     body {
       background: linear-gradient(
         135deg,
+        #ffecd2,  /* Светло-бежевый */
         #ffe0b2,  /* Кремовый */
         #ffcc80,  /* Персиково-оранжевый */
         #ffb74d,  /* Золотисто-оранжевый */
         #ff7043,  /* Теплый оранжевый */
-        #ffab91   /* Персиковый */
+        #ffab91,  /* Персиковый */
+        #ff8a65,  /* Красновато-оранжевый */
+        #ff5722,  /* Оранжево-красный */
+        #ffcdd2,  /* Светло-розовый */
+        #ffe082   /* Светло-желтый */
       );
-      background-size: 300% 300%; /* Размер увеличен для плавного движения */
-      animation: gradientBg 15s ease infinite; /* Плавная анимация */
+      background-size: 400% 400%; /* Размер увеличен для плавного движения */
+      animation: gradientBg 30s ease infinite; /* Плавная анимация */
       font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
@@ -26,18 +31,22 @@
       align-items: center;
       min-height: 100vh; /* Минимальная высота страницы на весь экран */
       justify-content: center;
+      transition: all 0.5s ease;
     }
 
     .header {
       text-align: center;
       padding: 20px;
-      background-color: rgba(255, 193, 7, 0.9); /* Фоновый цвет для фиксированного заголовка */
+      background: linear-gradient(135deg, #ffecd2, #ffe0b2, #ffcc80, #ffab91, #ff7043, #ff8a65, #ff5722, #ffcdd2, #ffe082); /* Градиент для заголовка с бежево-оранжевыми тонами */
+      background-size: 400% 400%;
+      animation: gradientBg 30s ease infinite; /* Синхронизация с общим градиентом */
       width: 100%;
       position: fixed;
       top: 0;
       left: 0;
       z-index: 1000;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: background 0.5s ease;
     }
 
     .header h1 {
@@ -46,12 +55,14 @@
       font-weight: bold;
       animation: fadeIn 1s ease-in-out;
       margin: 0;
+      transition: color 0.5s ease;
     }
 
     .header p {
       margin: 5px 0 0 0;
       font-size: 1rem;
       color: #5d4037;
+      transition: color 0.5s ease;
     }
 
     main {
@@ -61,12 +72,13 @@
       justify-content: center;
       align-items: center;
       flex-grow: 1;
+      transition: all 0.5s ease;
     }
 
     .container {
       width: 90%;
       max-width: 600px;
-      background: #fff8e1;
+      background: #fff1db; /* Однородный золотисто-оранжевый цвет для блока */
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
       padding: 40px;
@@ -77,6 +89,7 @@
       gap: 25px; /* Единое расстояние между элементами */
       min-height: 500px; /* Фиксированная минимальная высота контейнера для консистентного отображения */
       box-sizing: border-box;
+      transition: background 0.5s ease, box-shadow 0.5s ease;
     }
 
     .hidden {
@@ -100,6 +113,7 @@
       color: #e65100; /* Яркий оранжевый для заголовков секций */
       text-transform: uppercase;
       animation: fadeIn 0.5s ease-in-out;
+      transition: color 0.5s ease;
     }
 
     input {
@@ -109,9 +123,9 @@
       border: 1px solid #e0e0e0;
       border-radius: 6px;
       font-size: 16px;
-      background-color: #fff8e1;
+      background-color: #ffecd2; /* Однородный светло-бежевый цвет */
       color: #5d4037;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.5s ease;
       box-sizing: border-box;
     }
 
@@ -131,11 +145,12 @@
       background-color: #ff8a65;
       color: white;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.5s ease;
     }
 
     button:hover {
-      background-color: #d84315; /* Более темный оттенок при наведении */
+      background-color: #e64a19;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     button:active {
@@ -169,7 +184,7 @@
     }
 
     .accounts-list li {
-      background: #fff3e0;
+      background: #fff1db; /* Однородный золотисто-оранжевый цвет для элементов списка */
       border: 1px solid #e0e0e0;
       border-radius: 5px;
       padding: 15px;
@@ -177,7 +192,7 @@
       display: flex;
       justify-content: space-between;
       color: #5d4037;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
     }
 
     .accounts-list li:hover {
@@ -200,8 +215,14 @@
       0% {
         background-position: 0% 50%;
       }
+      25% {
+        background-position: 50% 75%;
+      }
       50% {
         background-position: 100% 50%;
+      }
+      75% {
+        background-position: 50% 25%;
       }
       100% {
         background-position: 0% 50%;
@@ -250,7 +271,7 @@
       </div>
 
       <h3>Переводы</h3>
-      <div class="form-group" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+      <div class="form-group" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px;">
         <input type="number" id="from-account-id" placeholder="ID счета-отправителя">
         <input type="number" id="to-account-id" placeholder="ID счета-получателя">
         <input type="number" id="transfer-amount" placeholder="Сумма перевода">
