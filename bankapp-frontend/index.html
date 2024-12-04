@@ -151,6 +151,7 @@
     button:hover {
       background-color: #e64a19;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      animation: pulse 1s infinite;
     }
 
     button:active {
@@ -226,6 +227,15 @@
       }
       100% {
         background-position: 0% 50%;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
       }
     }
   </style>
