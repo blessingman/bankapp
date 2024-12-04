@@ -25,8 +25,14 @@ const accountsList = document.getElementById("accounts-list");
 
 // Helper Functions
 function switchSection(from, to) {
+  from.classList.remove("visible");
   from.classList.add("hidden");
-  to.classList.remove("hidden");
+  setTimeout(() => {
+    from.style.display = "none";
+    to.style.display = "flex";
+    to.classList.remove("hidden");
+    to.classList.add("visible");
+  }, 500); // Время соответствует длительности transition в CSS
 }
 
 async function fetchWithAuth(endpoint, options = {}) {

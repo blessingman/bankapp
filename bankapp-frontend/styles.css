@@ -1,15 +1,22 @@
-/* Основные стили */
 body {
+  background: linear-gradient(
+    135deg,
+    #ffe0b2,  /* Кремовый */
+    #ffcc80,  /* Персиково-оранжевый */
+    #ffb74d,  /* Золотисто-оранжевый */
+    #ff7043,  /* Теплый оранжевый */
+    #ffab91   /* Персиковый */
+  );
+  background-size: 300% 300%; /* Размер увеличен для плавного движения */
+  animation: gradientBg 15s ease infinite; /* Плавная анимация */
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #fff3e0, #ffe0b2); /* Теплый градиент */
-  color: #5d4037; /* Мягкий коричневый цвет для текста */
+  color: #5d4037; /* Мягкий коричневый для текста */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 /* Заголовок */
 .header {
   text-align: center;
@@ -20,33 +27,43 @@ body {
   font-size: 2.5rem;
   color: #bf360c; /* Теплый оранжевый цвет для заголовка */
   font-weight: bold;
+  animation: fadeIn 1s ease-in-out;
 }
 
 /* Основной контейнер */
 .main-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row; /* Блоки располагаются в строку */
+  align-items: flex-start; /* Выравнивание всех блоков по верхнему краю */
   justify-content: center;
-  min-height: calc(100vh - 60px);
-  padding: 20px;
+  gap: 20px; /* Расстояние между блоками */
+  margin-top: 50px;
 }
-
 .container {
   max-width: 400px;
   width: 100%;
-  background: #fff8e1; /* Единый цвет блока */
+  background: #fff8e1;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   padding: 25px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: stretch; /* Полная ширина элементов внутри */
+  gap: 15px; /* Единое расстояние между элементами */
 }
 
-/* Скрытие */
+/* Скрытие секций */
 .hidden {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease, visibility 0.5s;
 }
 
 /* Заголовки секций */
@@ -56,36 +73,38 @@ h2 {
   text-align: center;
   color: #e65100; /* Яркий оранжевый для заголовков секций */
   text-transform: uppercase;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Поля ввода */
 input {
-  width: 100%;
-  padding: px;
-  border: 1px solid #e0e0e0; /* Легкая граница */
+  width: 100%; /* Полная ширина контейнера */
+  padding: 12px;
+  margin: 0; /* Убираем внешние отступы */
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 16px;
-  background-color: #fff8e1; /* Единый цвет */
-  color: #5d4037; /* Темный текст */
+  background-color: #fff8e1;
+  color: #5d4037;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
 input:focus {
-  border-color: #ff9800; /* Оранжевый цвет при фокусе */
+  border-color: #ff9800;
   outline: none;
   box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
 }
-
 /* Кнопки */
 button {
-  width: 100%;
+  width: 100%; /* Полная ширина */
   padding: 12px;
   font-size: 16px;
+  margin: 0; /* Убраны лишние отступы */
   border: none;
   border-radius: 6px;
-  background-color: #ff8a65; /* Теплый оранжево-красный */
+  background-color: #ff8a65;
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 button:hover {
@@ -95,7 +114,9 @@ button:hover {
 button:active {
   transform: scale(0.95);
 }
-
+button + button {
+  margin-top: 10px;
+}
 /* Ссылки */
 .link {
   color: #ff7043; /* Яркий теплый оранжевый */
@@ -104,10 +125,12 @@ button:active {
   margin-top: 15px;
   display: block;
   text-align: center;
+  transition: color 0.3s ease;
 }
 
 .link:hover {
   text-decoration: underline;
+  color: #d84315; /* Темнее при наведении */
 }
 
 /* Список счетов */
@@ -126,13 +149,35 @@ button:active {
   display: flex;
   justify-content: space-between;
   color: #5d4037;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.accounts-list li:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
-
-
-
-input:focus {
-  border: 2px solid red;
+@keyframes gradientBg {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
-
